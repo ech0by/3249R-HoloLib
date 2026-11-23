@@ -25,8 +25,8 @@ int backRPort = 1;
 int imuPort = 10;
 
 std::vector<LiftMotorConfig> lift_motor_configs = {
-    {18, pros::MotorGear::blue},
-    {19, pros::MotorGear::blue}
+    {11, pros::MotorGear::red},
+    {12, pros::MotorGear::red}
 };
 
 Eigen::Matrix3f cameraMatrix = (Eigen::Matrix3f() << 383.57019326565296f * 0.5f,
@@ -50,10 +50,10 @@ Eigen::Vector<float, 5> distCoeffs = (Eigen::Vector<float, 5>() << -0.0472713119
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 // Initalize motors, IMU, odometry, and chassis
-pros::Motor frontLeft = pros::Motor(frontLPort, pros::MotorGear::blue);
-pros::Motor frontRight = pros::Motor(frontRPort, pros::MotorGear::blue);
-pros::Motor backLeft = pros::Motor(backLPort, pros::MotorGear::blue);
-pros::Motor backRight = pros::Motor(backRPort, pros::MotorGear::blue);
+pros::Motor frontLeft = pros::Motor(frontLPort, pros::MotorGear::green);
+pros::Motor frontRight = pros::Motor(frontRPort, pros::MotorGear::green);
+pros::Motor backLeft = pros::Motor(backLPort, pros::MotorGear::green);
+pros::Motor backRight = pros::Motor(backRPort, pros::MotorGear::green);
 pros::Imu imu = pros::Imu(imuPort);
 pros::AIVision visionSensor = pros::AIVision(8);
 
