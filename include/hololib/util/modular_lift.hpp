@@ -94,6 +94,23 @@ public:
   void moveTo(float target_motor_degrees);
 
   /**
+   * @brief Drive the lift motors directly (stops any active moveTo hold).
+   *
+   * @param millivolts Voltage in mV, positive is up (-12000 to 12000).
+   */
+  void moveManual(float millivolts);
+
+  /**
+   * @brief Hold the lift at its current position using the controller.
+   */
+  void holdCurrent();
+
+  /**
+   * @brief Average position of the lift motors in degrees.
+   */
+  float getPosition();
+
+  /**
    * @brief Cancel the current movement command.
    */
   void cancel();

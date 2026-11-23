@@ -16,16 +16,16 @@
 #include <print>
 
 // Motor ports (negative for reversing motor)
-int frontLPort = 3;
-int frontRPort = 2;
-int backLPort = 4;
-int backRPort = 1;
+int frontLPort = -3;
+int frontRPort = -2;
+int backLPort = -4;
+int backRPort = -5;
 
 // IMU port
 int imuPort = 10;
 
 std::vector<LiftMotorConfig> lift_motor_configs = {
-    {11, pros::MotorGear::red},
+    {-11, pros::MotorGear::red},
     {12, pros::MotorGear::red}
 };
 
@@ -178,6 +178,9 @@ void autonomous() {
 void opcontrol() {
     odom.setPose(0, 0, 0);
 
+    constexpr float LIFT_MANUAL_MV = 12000.0f; // manual lift voltage (max 12000 = full speed)
+    bool liftWasManual = false;
+
     // Example drive curves
     hololib::Chassis::DriveCurve movement_curve{.curve_multipler = 1.01, .deadzone = 5, .minimum_output = 5};
     hololib::Chassis::DriveCurve rotation_curve{.curve_multipler = 1.028, .deadzone = 5, .minimum_output = 5};
@@ -190,6 +193,20 @@ void opcontrol() {
         int sideways = master.get_analog(ANALOG_LEFT_X);
         int rotation = master.get_analog(ANALOG_RIGHT_X);
 
+        // Lift: hold R1 to raise, hold R2 to lower, hold position on release
+        bool liftUp = master.get_digital(DIGITAL_R1);
+        bool liftDown = master.get_digital(DIGITAL_R2);
+        if (liftUp && !liftDown) {
+            my_lift.moveManual(LIFT_MANUAL_MV);
+            liftWasManual = true;
+        } else if (liftDown && !liftUp) {
+            my_lift.moveManual(-LIFT_MANUAL_MV);
+            liftWasManual = true;
+        } else if (liftWasManual) {
+            my_lift.holdCurrent();
+            liftWasManual = false;
+        }
+
         // Detects collisions utilizing multiple information from the motors (velocity current, motor load and
         // effeciency)
         if (chassis.detectCollision()) {
@@ -199,7 +216,7 @@ void opcontrol() {
 
         // minor heading correction to assist drivers (only on when no joystick output)
         chassis.driveControl(forward, sideways, rotation, {.movement = movement_curve, .rotation = rotation_curve},
-                             true, 0.0f, {.correctionOn = true, .kP = 0.15f, .kI = 0.01f, .kD = 0.01f});
+                             false, 0.0f, {.correctionOn = true, .kP = 0.15f, .kI = 0.01f, .kD = 0.01f});
 
         pros::delay(20); // delay for buffer
     }

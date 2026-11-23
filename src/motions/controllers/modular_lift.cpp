@@ -1,4 +1,5 @@
 #include "hololib/util/modular_lift.hpp"
+#include <algorithm>
 #include <cmath>
 
 ModularLift::ModularLift(const std::vector<LiftMotorConfig>& m_configs, LiftMechanism t, LiftConfig c)
@@ -124,6 +125,27 @@ void ModularLift::controlLoopImpl() {
     is_running = false;
     is_settled = false;
 }
+
+float ModularLift::getPosition() {
+    if (motors.empty())
+        return 0.0f;
+    float total = 0.0f;
+    for (auto& motor : motors) {
+        total += motor.get_position();
+    }
+    return total / motors.size();
+}
+
+void ModularLift::moveManual(float millivolts) {
+    // Stop the hold task without braking, then drive the motors directly.
+    cancel_request = true;
+    millivolts = std::clamp(millivolts, -12000.0f, 12000.0f);
+    for (auto& motor : motors) {
+        motor.move_voltage(millivolts);
+    }
+}
+
+void ModularLift::holdCurrent() { moveTo(getPosition()); }
 
 void ModularLift::cancel() {
     cancel_request = true;
